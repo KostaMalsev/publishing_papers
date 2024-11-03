@@ -1,2 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Academic Paper Search Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .search-container {
+            margin: 20px 0;
+        }
+        .buttons {
+            margin: 20px 0;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            cursor: pointer;
+        }
+        .results {
+            margin-top: 20px;
+        }
+        .platform-section {
+            margin: 20px 0;
+        }
+        .search-link {
+            display: block;
+            margin: 5px 0;
+            color: blue;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Academic Paper Search Tool</h1>
+    <div class="buttons">
+        <button onclick="generateSearches()">Generate Search Links</button>
+        <button onclick="openAllSearches()">Open All Searches</button>
+    </div>
+    <div id="results" class="results"></div>
 
-
+    <script>
+        const papers = [
+            {
+                title: "Occupational Choice: Teacher Quality Versus Teacher Quantity",
+                author: "Limor Hatsor",
+                year: "2012",
+                coauthors: []
+            },
+            {
+                title: "Allocation of Resources in Educational Production: The Budget Puzzle",
+                author: "Limor Hatsor",
+                year: "2014",
+                coauthors: []
+            },
+            {
+                title: "Higher Education Funding: The Value of Information",
+                author: "Limor Hatsor",
+                year: "2015",
+                coauthors: []
+            },
+            {
+                title: "Home production, market substitutes, and the labor supply of mothers",
+                author: "Limor Hatsor",
+                year: "2020",
+                coauthors: ["Ronen Bar-El", "Yossef Tobol"]
+            },
+            {
+                title: "Subsidizing Heterogeneous Higher Education Systems",
+                author: "Limor Hatsor",
+                year: "2021",
+                coauthors: ["Itzhak Zilcha"]
+            },
+            {
+                title: "Product regulation or protectionism?",
+                author: "Limor Hatsor",
+                year: "2023",
+                coauthors: ["Artyom Jelnov"]
+            },
+            {
+                title: "An experiment on donations, personal stories, and bad luck",
+                author: "Limor Hatsor",
+                year: "2023",
+                coauthors: ["Ronen Bar-El", "Avichai Snir"]
+            }
+        ];
+
+        const platforms = {
+            "Academia.edu": "site:academia.edu",
+            "ResearchGate": "site:researchgate.net",
+            "SSRN": "site:papers.ssrn.com"
+        };
+
+        function createSearchUrl(query) {
+            return `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+        }
+
+        function generatePaperSearches(paper, platformQuery) {
+            const searches = [];
+            // Basic search with title and author
+            searches.push({
+                type: 'Basic',
+                url: createSearchUrl(`${platformQuery} "${paper.author}" "${paper.title}"`)
+            });
+            
+            // Search with year
+            searches.push({
+                type: 'With Year',
+                url: createSearchUrl(`${platformQuery} "${paper.author}" "${paper.title}" ${paper.year}`)
+            });
+
+            // If there are coauthors, add a search with them
+            if (paper.coauthors.length > 0) {
+                searches.push({
+                    type: 'With Coauthors',
+                    url: createSearchUrl(`${platformQuery} "${paper.author}" ${paper.coauthors.join(' ')} "${paper.title}"`)
+                });
+            }
+
+            return searches;
+        }
+
+        function generateSearches() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '';
+
+            for (const [platformName, platformQuery] of Object.entries(platforms)) {
+                const platformDiv = document.createElement('div');
+                platformDiv.className = 'platform-section';
+                platformDiv.innerHTML = `<h2>${platformName}</h2>`;
+
+                papers.forEach(paper => {
+                    const searches = generatePaperSearches(paper, platformQuery);
+                    const paperDiv = document.createElement('div');
+                    paperDiv.innerHTML = `<h3>${paper.title}</h3>`;
+                    
+                    searches.forEach(search => {
+                        const link = document.createElement('a');
+                        link.className = 'search-link';
+                        link.textContent = `${search.type} Search`;
+                        link.href = search.url;
+                        link.target = '_blank';
+                        paperDiv.appendChild(link);
+                    });
+
+                    platformDiv.appendChild(paperDiv);
+                });
+
+                resultsDiv.appendChild(platformDiv);
+            }
+        }
+
+        function openAllSearches() {
+            if (!confirm('This will open multiple tabs. Continue?')) return;
+
+            for (const [platformName, platformQuery] of Object.entries(platforms)) {
+                papers.forEach(paper => {
+                    const searches = generatePaperSearches(paper, platformQuery);
+                    // Only open the basic search to avoid too many tabs
+                    window.open(searches[0].url, '_blank');
+                });
+            }
+        }
+    </script>
+</body>
+</html>
